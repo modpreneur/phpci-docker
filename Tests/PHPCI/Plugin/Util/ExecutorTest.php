@@ -1,19 +1,14 @@
 <?php
 
-/**
- * PHPCI - Continuous Integration for PHP
- *
- * @copyright    Copyright 2015, Block 8 Limited.
- * @license      https://github.com/Block8/PHPCI/blob/master/LICENSE.md
- * @link         https://www.phptesting.org/
- */
+namespace PHPCI\Plugin\Tests\Util;
 
-namespace Tests\PHPCI\Plugin\Util;
+require_once __DIR__ . "/ExamplePlugins.php";
 
 use PHPCI\Plugin\Util\Executor;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTestCase;
 
-class ExecutorTest extends \PHPUnit_Framework_TestCase
+class ExecutorTest extends ProphecyTestCase
 {
     /**
      * @var Executor
@@ -24,19 +19,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     protected $mockFactory;
 
-    protected $mockStore;
-
     protected function setUp()
     {
         parent::setUp();
         $this->mockBuildLogger = $this->prophesize('\PHPCI\Logging\BuildLogger');
         $this->mockFactory = $this->prophesize('\PHPCI\Plugin\Util\Factory');
-        $this->mockStore = $this->prophesize('\PHPCI\Store\BuildStore');
-        $this->testedExecutor = new Executor(
-            $this->mockFactory->reveal(),
-            $this->mockBuildLogger->reveal(),
-            $this->mockStore->reveal()
-        );
+        $this->testedExecutor = new Executor($this->mockFactory->reveal(), $this->mockBuildLogger->reveal());
     }
 
     public function testExecutePlugin_AssumesPHPCINamespaceIfNoneGiven()
@@ -55,26 +43,25 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     public function testExecutePlugin_KeepsCalledNameSpace()
     {
         $options = array();
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginFull');
+        $pluginName = 'ExamplePluginFull';
+        $pluginNamespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
 
-        $this->mockFactory->buildPlugin($pluginClass, $options)
+        $this->mockFactory->buildPlugin($pluginNamespace . $pluginName, $options)
           ->shouldBeCalledTimes(1)
           ->willReturn($this->prophesize('PHPCI\Plugin')->reveal());
 
-        $this->testedExecutor->executePlugin($pluginClass, $options);
+        $this->testedExecutor->executePlugin($pluginNamespace . $pluginName, $options);
     }
 
     public function testExecutePlugin_CallsExecuteOnFactoryBuildPlugin()
     {
         $options = array();
         $pluginName = 'PhpUnit';
-        $build = new \PHPCI\Model\Build();
 
         $mockPlugin = $this->prophesize('PHPCI\Plugin');
         $mockPlugin->execute()->shouldBeCalledTimes(1);
 
         $this->mockFactory->buildPlugin(Argument::any(), Argument::any())->willReturn($mockPlugin->reveal());
-        $this->mockFactory->getResourceFor('PHPCI\Model\Build')->willReturn($build);
 
         $this->testedExecutor->executePlugin($pluginName, $options);
     }
@@ -128,7 +115,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     {
         $phpUnitPluginOptions = array();
         $behatPluginOptions = array();
-        $build = new \PHPCI\Model\Build();
 
         $config = array(
            'stageOne' => array(
@@ -144,7 +130,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $this->mockFactory->buildPlugin($pluginNamespace . 'PhpUnit', $phpUnitPluginOptions)
                           ->willReturn($mockPhpUnitPlugin->reveal());
-        $this->mockFactory->getResourceFor('PHPCI\Model\Build')->willReturn($build);
+
 
         $mockBehatPlugin = $this->prophesize('PHPCI\Plugin');
         $mockBehatPlugin->execute()->shouldBeCalledTimes(1)->willReturn(true);
@@ -152,14 +138,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->mockFactory->buildPlugin($pluginNamespace . 'Behat', $behatPluginOptions)
                           ->willReturn($mockBehatPlugin->reveal());
 
+
         $this->testedExecutor->executePlugins($config, 'stageOne');
     }
 
-    protected function getFakePluginClassName($pluginName)
-    {
-        $pluginNamespace = '\\Tests\\PHPCI\\Plugin\\Util\\Fake\\';
-
-        return $pluginNamespace . $pluginName;
-    }
 }
-
+ 

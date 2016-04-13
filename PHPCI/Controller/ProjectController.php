@@ -86,7 +86,7 @@ class ProjectController extends PHPCI\Controller
         $this->view->builds   = $builds[0];
         $this->view->total    = $builds[1];
         $this->view->project  = $project;
-        $this->view->branch   = urldecode($branch);
+        $this->view->branch = urldecode($branch);
         $this->view->branches = $this->projectStore->getKnownBranches($projectId);
         $this->view->page     = $page;
         $this->view->pages    = $pages;
@@ -220,7 +220,6 @@ class ProjectController extends PHPCI\Controller
                 'build_config' => $this->getParam('build_config', null),
                 'allow_public_status' => $this->getParam('allow_public_status', 0),
                 'branch' => $this->getParam('branch', null),
-                'group' => $this->getParam('group_id', null),
             );
 
             $project = $this->projectService->createProject($title, $type, $reference, $options);
@@ -283,9 +282,7 @@ class ProjectController extends PHPCI\Controller
             'ssh_public_key' => $this->getParam('pubkey', null),
             'build_config' => $this->getParam('build_config', null),
             'allow_public_status' => $this->getParam('allow_public_status', 0),
-            'archived' => $this->getParam('archived', 0),
             'branch' => $this->getParam('branch', null),
-            'group' => $this->getParam('group_id', null),
         );
 
         $project = $this->projectService->updateProject($project, $title, $type, $reference, $options);
@@ -354,27 +351,7 @@ class ProjectController extends PHPCI\Controller
         $field->setClass('form-control')->setContainerClass('form-group')->setValue('master');
         $form->addField($field);
 
-        $field = Form\Element\Select::create('group_id', 'Project Group', true);
-        $field->setClass('form-control')->setContainerClass('form-group')->setValue(1);
-
-        $groups = array();
-        $groupStore = b8\Store\Factory::getStore('ProjectGroup');
-        $groupList = $groupStore->getWhere(array(), 100, 0, array(), array('title' => 'ASC'));
-
-        foreach ($groupList['items'] as $group) {
-            $groups[$group->getId()] = $group->getTitle();
-        }
-
-        $field->setOptions($groups);
-        $form->addField($field);
-
         $field = Form\Element\Checkbox::create('allow_public_status', Lang::get('allow_public_status'), false);
-        $field->setContainerClass('form-group');
-        $field->setCheckedValue(1);
-        $field->setValue(0);
-        $form->addField($field);
-
-        $field = Form\Element\Checkbox::create('archived', Lang::get('archived'), false);
         $field->setContainerClass('form-group');
         $field->setCheckedValue(1);
         $field->setValue(0);

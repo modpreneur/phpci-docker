@@ -59,6 +59,11 @@ class PhpSpec implements PHPCI\Plugin
 
         $phpspec = $this->phpci->findBinary(array('phpspec', 'phpspec.php'));
 
+        if (!$phpspec) {
+            $this->phpci->logFailure(PHPCI\Helper\Lang::get('could_not_find', 'phpspec'));
+            return false;
+        }
+
         $success = $this->phpci->executeCommand($phpspec . ' --format=junit --no-code-generation run');
         $output = $this->phpci->getLastOutput();
 

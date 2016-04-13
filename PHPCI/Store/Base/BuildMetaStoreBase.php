@@ -21,7 +21,10 @@ class BuildMetaStoreBase extends Store
     protected $primaryKey  = 'id';
 
     /**
-     * Get a BuildMeta by primary key (Id)
+     * Returns a BuildMeta model by primary key.
+     * @param mixed $value
+     * @param string $useConnection
+     * @return \@appNamespace\Model\BuildMeta|null
      */
     public function getByPrimaryKey($value, $useConnection = 'read')
     {
@@ -29,8 +32,11 @@ class BuildMetaStoreBase extends Store
     }
 
     /**
-     * Get a single BuildMeta by Id.
-     * @return null|BuildMeta
+     * Returns a BuildMeta model by Id.
+     * @param mixed $value
+     * @param string $useConnection
+     * @throws HttpException
+     * @return \@appNamespace\Model\BuildMeta|null
      */
     public function getById($value, $useConnection = 'read')
     {
@@ -52,7 +58,11 @@ class BuildMetaStoreBase extends Store
     }
 
     /**
-     * Get multiple BuildMeta by ProjectId.
+     * Returns an array of BuildMeta models by ProjectId.
+     * @param mixed $value
+     * @param int $limit
+     * @param string $useConnection
+     * @throws HttpException
      * @return array
      */
     public function getByProjectId($value, $limit = 1000, $useConnection = 'read')
@@ -84,7 +94,11 @@ class BuildMetaStoreBase extends Store
     }
 
     /**
-     * Get multiple BuildMeta by BuildId.
+     * Returns an array of BuildMeta models by BuildId.
+     * @param mixed $value
+     * @param int $limit
+     * @param string $useConnection
+     * @throws HttpException
      * @return array
      */
     public function getByBuildId($value, $limit = 1000, $useConnection = 'read')

@@ -51,7 +51,7 @@ class Application extends b8\Application
             return false;
         };
 
-        $skipAuth = array($this, 'shouldSkipAuth');
+        $skipAuth = [$this, 'shouldSkipAuth'];
 
         // Handler for the route we're about to register, checks for a valid session where necessary:
         $routeHandler = function (&$route, Response &$response) use (&$request, $validateSession, $skipAuth) {
@@ -135,18 +135,9 @@ class Application extends b8\Application
      */
     protected function setLayoutVariables(View &$layout)
     {
-        $groups = array();
-        $groupStore = b8\Store\Factory::getStore('ProjectGroup');
-        $groupList = $groupStore->getWhere(array(), 100, 0, array(), array('title' => 'ASC'));
-
-        foreach ($groupList['items'] as $group) {
-            $thisGroup = array('title' => $group->getTitle());
-            $projects = b8\Store\Factory::getStore('Project')->getByGroupId($group->getId());
-            $thisGroup['projects'] = $projects['items'];
-            $groups[] = $thisGroup;
-        }
-
-        $layout->groups = $groups;
+        /** @var \PHPCI\Store\ProjectStore $projectStore */
+        $projectStore = b8\Store\Factory::getStore('Project');
+        $layout->projects = $projectStore->getAll();
     }
 
     /**

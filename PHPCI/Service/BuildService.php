@@ -9,11 +9,6 @@
 
 namespace PHPCI\Service;
 
-use b8\Config;
-use Pheanstalk\Pheanstalk;
-use Pheanstalk\PheanstalkInterface;
-use PHPCI\BuildFactory;
-use PHPCI\Helper\Lang;
 use PHPCI\Model\Build;
 use PHPCI\Model\Project;
 use PHPCI\Store\BuildStore;
@@ -64,7 +59,6 @@ class BuildService
             $build->setCommitId($commitId);
         } else {
             $build->setCommitId('Manual');
-            $build->setCommitMessage(Lang::get('manual_build'));
         }
 
         if (!is_null($branch)) {
@@ -85,17 +79,7 @@ class BuildService
             $build->setExtra(json_encode($extra));
         }
 
-        $build = $this->buildStore->save($build);
-
-        $buildId = $build->getId();
-
-        if (!empty($buildId)) {
-            $build = BuildFactory::getBuild($build);
-            $build->sendStatusPostback();
-            $this->addBuildToQueue($build);
-        }
-
-        return $build;
+        return $this->buildStore->save($build);
     }
 
     /**
@@ -118,17 +102,7 @@ class BuildService
         $build->setCreated(new \DateTime());
         $build->setStatus(0);
 
-        $build = $this->buildStore->save($build);
-
-        $buildId = $build->getId();
-
-        if (!empty($buildId)) {
-            $build = BuildFactory::getBuild($build);
-            $build->sendStatusPostback();
-            $this->addBuildToQueue($build);
-        }
-
-        return $build;
+        return $this->buildStore->save($build);
     }
 
     /**
@@ -138,44 +112,6 @@ class BuildService
      */
     public function deleteBuild(Build $build)
     {
-        $build->removeBuildDirectory();
         return $this->buildStore->delete($build);
-    }
-
-    /**
-     * Takes a build and puts it into the queue to be run (if using a queue)
-     * @param Build $build
-     */
-    public function addBuildToQueue(Build $build)
-    {
-        $buildId = $build->getId();
-
-        if (empty($buildId)) {
-            return;
-        }
-
-        $config = Config::getInstance();
-
-        $settings = $config->get('phpci.worker', []);
-
-        if (!empty($settings['host']) && !empty($settings['queue'])) {
-            $jobData = array(
-                'type' => 'phpci.build',
-                'build_id' => $build->getId(),
-            );
-
-            if ($config->get('using_custom_file')) {
-                $jobData['config'] = $config->getArray();
-            }
-
-            $pheanstalk = new Pheanstalk($settings['host']);
-            $pheanstalk->useTube($settings['queue']);
-            $pheanstalk->put(
-                json_encode($jobData),
-                PheanstalkInterface::DEFAULT_PRIORITY,
-                PheanstalkInterface::DEFAULT_DELAY,
-                $config->get('phpci.worker.job_timeout', 600)
-            );
-        }
     }
 }

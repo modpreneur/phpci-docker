@@ -24,7 +24,6 @@ class SlackNotify implements \PHPCI\Plugin
     private $username;
     private $message;
     private $icon;
-    private $show_status;
 
     /**
      * Set up the plugin, configure options, etc.
@@ -61,12 +60,6 @@ class SlackNotify implements \PHPCI\Plugin
                 $this->username = 'PHPCI';
             }
 
-            if (isset($options['show_status'])) {
-                $this->show_status = (bool) $options['show_status'];
-            } else {
-                $this->show_status = true;
-            }
-
             if (isset($options['icon'])) {
                 $this->icon = $options['icon'];
             }
@@ -81,7 +74,31 @@ class SlackNotify implements \PHPCI\Plugin
      */
     public function execute()
     {
-        $body = $this->phpci->interpolate($this->message);
+        $message = $this->phpci->interpolate($this->message);
+
+        $successfulBuild = $this->build->isSuccessful();
+
+        if ($successfulBuild) {
+            $status = 'Success';
+            $color = 'good';
+        } else {
+            $status = 'Failed';
+            $color = 'danger';
+        }
+
+        // Build up the attachment data
+        $attachment = new \Maknz\Slack\Attachment(array(
+            'fallback' => $message,
+            'pretext'  => $message,
+            'color'    => $color,
+            'fields'   => array(
+                new \Maknz\Slack\AttachmentField(array(
+                    'title' => 'Status',
+                    'value' => $status,
+                    'short' => false
+                ))
+            )
+        ));
 
         $client = new \Maknz\Slack\Client($this->webHook);
 
@@ -99,39 +116,12 @@ class SlackNotify implements \PHPCI\Plugin
             $message->setIcon($this->icon);
         }
 
-        // Include an attachment which shows the status and hide the message
-        if ($this->show_status) {
-            $successfulBuild = $this->build->isSuccessful();
+        $message->attach($attachment);
 
-            if ($successfulBuild) {
-                $status = 'Success';
-                $color = 'good';
-            } else {
-                $status = 'Failed';
-                $color = 'danger';
-            }
+        $success = true;
 
-            // Build up the attachment data
-            $attachment = new \Maknz\Slack\Attachment(array(
-                'fallback' => $body,
-                'pretext'  => $body,
-                'color'    => $color,
-                'fields'   => array(
-                    new \Maknz\Slack\AttachmentField(array(
-                        'title' => 'Status',
-                        'value' => $status,
-                        'short' => false
-                    ))
-                )
-            ));
+        $message->send('');
 
-            $message->attach($attachment);
-
-            $body = '';
-        }
-
-        $message->send($body);
-
-        return true;
+        return $success;
     }
 }

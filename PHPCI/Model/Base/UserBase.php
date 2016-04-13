@@ -106,8 +106,6 @@ class UserBase extends Model
     public $indexes = array(
             'PRIMARY' => array('unique' => true, 'columns' => 'id'),
             'idx_email' => array('unique' => true, 'columns' => 'email'),
-            'email' => array('unique' => true, 'columns' => 'email'),
-            'name' => array('columns' => 'name'),
     );
 
     /**

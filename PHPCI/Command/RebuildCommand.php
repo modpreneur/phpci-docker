@@ -75,8 +75,7 @@ class RebuildCommand extends Command
         $store = Factory::getStore('Build');
         $service = new BuildService($store);
 
-        $builds = $store->getLatestBuilds(null, 1);
-        $lastBuild = array_shift($builds);
+        $lastBuild = array_shift($store->getLatestBuilds(null, 1));
         $service->createDuplicateBuild($lastBuild);
 
         $runner->run(new ArgvInput(array()), $output);

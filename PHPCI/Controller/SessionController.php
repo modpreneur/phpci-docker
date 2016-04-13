@@ -43,23 +43,15 @@ class SessionController extends \PHPCI\Controller
         $isLoginFailure = false;
 
         if ($this->request->getMethod() == 'POST') {
-            $token = $this->getParam('token');
-            if (!isset($token, $_SESSION['login_token']) || $token !== $_SESSION['login_token']) {
-                $isLoginFailure = true;
+            $user = $this->userStore->getByEmail($this->getParam('email'));
+
+            if ($user && password_verify($this->getParam('password', ''), $user->getHash())) {
+                $_SESSION['phpci_user_id']    = $user->getId();
+                $response = new b8\Http\Response\RedirectResponse();
+                $response->setHeader('Location', $this->getLoginRedirect());
+                return $response;
             } else {
-                unset($_SESSION['login_token']);
-
-                $user = $this->userStore->getByEmail($this->getParam('email'));
-
-                if ($user && password_verify($this->getParam('password', ''), $user->getHash())) {
-                    session_regenerate_id(true);
-                    $_SESSION['phpci_user_id']    = $user->getId();
-                    $response = new b8\Http\Response\RedirectResponse();
-                    $response->setHeader('Location', $this->getLoginRedirect());
-                    return $response;
-                } else {
-                    $isLoginFailure = true;
-                }
+                $isLoginFailure = true;
             }
         }
 
@@ -86,15 +78,9 @@ class SessionController extends \PHPCI\Controller
         $pwd->setClass('btn-success');
         $form->addField($pwd);
 
-        $tokenValue = $this->generateToken();
-        $_SESSION['login_token'] = $tokenValue;
-        $token = new b8\Form\Element\Hidden('token');
-        $token->setValue($tokenValue);
-        $form->addField($token);
-
         $this->view->form = $form->render();
         $this->view->failed = $isLoginFailure;
-
+        
         return $this->view->render();
     }
 
@@ -193,21 +179,5 @@ class SessionController extends \PHPCI\Controller
         }
 
         return $rtn;
-    }
-
-    /** Generate a random token.
-     *
-     * @return string
-     */
-    protected function generateToken()
-    {
-        if (function_exists('openssl_random_pseudo_bytes')) {
-            return bin2hex(openssl_random_pseudo_bytes(16));
-        }
-
-        return sprintf("%04x", mt_rand(0, 0xFFFF))
-            . sprintf("%04x", mt_rand(0, 0xFFFF))
-            . sprintf("%04x", mt_rand(0, 0xFFFF))
-            . sprintf("%04x", mt_rand(0, 0xFFFF));
     }
 }

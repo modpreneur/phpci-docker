@@ -54,7 +54,7 @@ class RemoteGitBuild extends Build
     */
     protected function cloneByHttp(Builder $builder, $cloneTo)
     {
-        $cmd = 'git clone --recursive ';
+        $cmd = 'git clone ';
 
         $depth = $builder->getConfig('clone_depth');
 
@@ -84,7 +84,7 @@ class RemoteGitBuild extends Build
         }
 
         // Do the git clone:
-        $cmd = 'git clone --recursive ';
+        $cmd = 'git clone ';
 
         $depth = $builder->getConfig('clone_depth');
 
@@ -124,16 +124,16 @@ class RemoteGitBuild extends Build
         $success = true;
         $commit = $this->getCommitId();
 
-        $chdir = IS_WIN ? 'cd /d "%s"' : 'cd "%s"';
-
         if (!empty($commit) && $commit != 'Manual') {
-            $cmd = $chdir . ' && git checkout %s --quiet';
-            $success = $builder->executeCommand($cmd, $cloneTo, $commit);
-        }
+            $cmd = 'cd "%s"';
 
-        // Always update the commit hash with the actual HEAD hash
-        if ($builder->executeCommand($chdir . ' && git rev-parse HEAD', $cloneTo)) {
-            $this->setCommitId(trim($builder->getLastOutput()));
+            if (IS_WIN) {
+                $cmd = 'cd /d "%s"';
+            }
+
+            $cmd .= ' && git checkout %s --quiet';
+
+            $success = $builder->executeCommand($cmd, $cloneTo, $this->getCommitId());
         }
 
         return $success;

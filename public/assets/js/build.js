@@ -8,63 +8,17 @@ var Build = Class.extend({
 
     init: function(build) {
         var self = this;
-        self.buildId = build;
-    },
-
-    setupBuild: function (buildData, linkTemplate) {
-        var self = this;
-        self.buildData = buildData;
-        self.fileLinkTemplate = linkTemplate;
-
-        self.registerQuery('build-updated', 10);
+        this.buildId = build;
+        this.registerQuery('build-updated', 10);
 
         $(window).on('build-updated', function(data) {
 
-            self.buildData = data.queryData;
-
             // If the build has finished, stop updating every 10 seconds:
-            if (self.buildData.status > 1) {
+            if (data.queryData.status > 1) {
                 self.cancelQuery('build-updated');
                 $(window).trigger({type: 'build-complete'});
             }
 
-            $('.build-duration').data('duration', self.buildData.duration ? self.buildData.duration : '');
-            $('.build-started').data('date', self.buildData.started ? self.buildData.started : '');
-            $('.build-finished').data('date', self.buildData.finished ? self.buildData.finished : '');
-            $('#log pre').html(self.buildData.log);
-            $('.errors-table tbody').append(self.buildData.error_html);
-
-            if (self.buildData.errors == 0) {
-                $('.errors-label').hide();
-            } else {
-                $('.errors-label').text(self.buildData.errors);
-                $('.errors-label').show();
-            }
-
-            switch (self.buildData.status) {
-                case 0:
-                    $('body').removeClass('skin-red skin-green skin-yellow');
-                    $('body').addClass('skin-blue');
-                    break;
-
-                case 1:
-                    $('body').removeClass('skin-red skin-green skin-blue');
-                    $('body').addClass('skin-yellow');
-                    break;
-
-                case 2:
-                    $('body').removeClass('skin-red skin-blue skin-yellow');
-                    $('body').addClass('skin-green');
-                    break;
-
-                case 3:
-                    $('body').removeClass('skin-blue skin-green skin-yellow');
-                    $('body').addClass('skin-red');
-                    break;
-
-            }
-
-            PHPCI.uiUpdated();
         });
     },
 
@@ -73,16 +27,14 @@ var Build = Class.extend({
         var uri = 'build/meta/' + self.buildId;
         var query = query || {};
 
+        if (name == 'build-updated') {
+            uri = 'build/data/' + self.buildId;
+        }
+
         var cb = function() {
-            var fullUri = window.PHPCI_URL + uri;
-
-            if (name == 'build-updated') {
-                fullUri = window.PHPCI_URL + 'build/data/' + self.buildId + '?since=' + self.buildData.since;
-            }
-
             $.ajax({
                 dataType: "json",
-                url: fullUri,
+                url: window.PHPCI_URL + uri,
                 data: query,
                 success: function(data) {
                     $(window).trigger({type: name, queryData: data});
@@ -125,17 +77,11 @@ var Build = Class.extend({
         if (renderOrder) {
             renderOrder = JSON.parse(renderOrder);
         } else {
-            renderOrder = ['build-lines-chart', 'build-warnings-chart'];
+            renderOrder = ['build-time', 'build-lines-chart', 'build-warnings-chart', 'build-log'];
         }
 
         for (var idx in renderOrder) {
             var key = renderOrder[idx];
-
-            // Plugins have changed, clear the order.
-            if (typeof self.plugins[key] == 'undefined') {
-                localStorage.setItem('phpci-plugin-order', []);
-            }
-
             self.renderPlugin(self.plugins[key]);
             rendered.push(key);
         }
@@ -162,8 +108,8 @@ var Build = Class.extend({
             output = $('<div class="box-body"></div>').append(output);
         }
 
-        var container = $('<div></div>').addClass('ui-plugin ' + plugin.css).attr('id', plugin.id);
-        var content = $('<div></div>').append(output);
+        var container = $('<div></div>').addClass('ui-plugin ' + plugin.css);
+        var content = $('<div></div>').attr('id', plugin.id).append(output);
         content.addClass('box box-default');
 
         if (plugin.title) {

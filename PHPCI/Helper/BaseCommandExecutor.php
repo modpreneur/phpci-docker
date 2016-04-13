@@ -9,9 +9,9 @@
 
 namespace PHPCI\Helper;
 
-use Exception;
-use PHPCI\Logging\BuildLogger;
+use \PHPCI\Logging\BuildLogger;
 use Psr\Log\LogLevel;
+use PHPCI\Helper\Lang;
 
 /**
  * Handles running system commands with variables.
@@ -20,7 +20,7 @@ use Psr\Log\LogLevel;
 abstract class BaseCommandExecutor implements CommandExecutor
 {
     /**
-     * @var BuildLogger
+     * @var \PHPCI\Logging\BuildLogger
      */
     protected $logger;
 
@@ -144,12 +144,13 @@ abstract class BaseCommandExecutor implements CommandExecutor
     /**
      * Find a binary required by a plugin.
      * @param string $binary
-     * @param bool $quiet
+     * @param null $buildPath
      * @return null|string
      */
-    public function findBinary($binary, $quiet = false)
+    public function findBinary($binary, $buildPath = null)
     {
-        $composerBin = $this->getComposerBinDir(realpath($this->buildPath));
+        $binaryPath = null;
+        $composerBin = $this->getComposerBinDir(realpath($buildPath));
 
         if (is_string($binary)) {
             $binary = array($binary);
@@ -159,31 +160,32 @@ abstract class BaseCommandExecutor implements CommandExecutor
             $this->logger->log(Lang::get('looking_for_binary', $bin), LogLevel::DEBUG);
 
             if (is_dir($composerBin) && is_file($composerBin.'/'.$bin)) {
+
                 $this->logger->log(Lang::get('found_in_path', $composerBin, $bin), LogLevel::DEBUG);
-                return $composerBin . '/' . $bin;
+                $binaryPath = $composerBin . '/' . $bin;
+                break;
             }
 
             if (is_file($this->rootDir . $bin)) {
                 $this->logger->log(Lang::get('found_in_path', 'root', $bin), LogLevel::DEBUG);
-                return $this->rootDir . $bin;
+                $binaryPath = $this->rootDir . $bin;
+                break;
             }
 
             if (is_file($this->rootDir . 'vendor/bin/' . $bin)) {
                 $this->logger->log(Lang::get('found_in_path', 'vendor/bin', $bin), LogLevel::DEBUG);
-                return $this->rootDir . 'vendor/bin/' . $bin;
+                $binaryPath = $this->rootDir . 'vendor/bin/' . $bin;
+                break;
             }
 
             $findCmdResult = $this->findGlobalBinary($bin);
             if (is_file($findCmdResult)) {
                 $this->logger->log(Lang::get('found_in_path', '', $bin), LogLevel::DEBUG);
-                return $findCmdResult;
+                $binaryPath = $findCmdResult;
+                break;
             }
         }
-
-        if ($quiet) {
-            return;
-        }
-        throw new Exception(Lang::get('could_not_find', implode('/', $binary)));
+        return $binaryPath;
     }
 
     /**

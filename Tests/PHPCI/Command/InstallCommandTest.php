@@ -1,23 +1,16 @@
 <?php
 
-/**
- * PHPCI - Continuous Integration for PHP
- *
- * @copyright    Copyright 2015, Block 8 Limited.
- * @license      https://github.com/Block8/PHPCI/blob/master/LICENSE.md
- * @link         https://www.phptesting.org/
- */
-
-namespace Tests\PHPCI\Plugin\Command;
+namespace PHPCI\Plugin\Tests\Command;
 
 use Symfony\Component\Console\Application;
+use Prophecy\PhpUnit\ProphecyTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Console\Helper\HelperSet;
 
-class InstallCommandTest extends \PHPUnit_Framework_TestCase
+class InstallCommandTest extends ProphecyTestCase
 {
-    public $config;
-    public $admin;
+    protected $config;
+    protected $admin;
     protected $application;
 
     public function setup()
@@ -62,26 +55,22 @@ class InstallCommandTest extends \PHPUnit_Framework_TestCase
                 'setupDatabase',
                 'createAdminUser',
                 'writeConfigFile',
-                'checkRequirements',
             ))
             ->getMock();
-
-        $self = $this;
 
         $command->expects($this->once())->method('verifyNotInstalled')->willReturn(true);
         $command->expects($this->once())->method('verifyDatabaseDetails')->willReturn(true);
         $command->expects($this->once())->method('setupDatabase')->willReturn(true);
         $command->expects($this->once())->method('createAdminUser')->will(
-            $this->returnCallback(function ($adm) use ($self) {
-                $self->admin = $adm;
+            $this->returnCallback(function ($adm) {// use (&$admin) {
+                $this->admin = $adm;
             })
         );
         $command->expects($this->once())->method('writeConfigFile')->will(
-            $this->returnCallback(function ($cfg) use ($self) {
-                $self->config = $cfg;
+            $this->returnCallback(function ($cfg) { //use (&$config) {
+                $this->config = $cfg;
             })
         );
-        $command->expects($this->once())->method('checkRequirements');
 
         return $command;
     }
@@ -107,7 +96,6 @@ class InstallCommandTest extends \PHPUnit_Framework_TestCase
             '--admin-name' => 'phpci4',
             '--admin-pass' => 'phpci5',
             '--url' => 'http://test.phpci.org',
-            '--queue-disabled' => null,
         );
 
         if (!is_null($exclude)) {
@@ -176,7 +164,7 @@ class InstallCommandTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('testedvalue', $this->config['b8']['database']['name']);
     }
 
-    public function testDatabaseUserConfig()
+    public function testDatabaseUserameConfig()
     {
         $dialog = $this->getDialogHelperMock();
 
@@ -244,7 +232,7 @@ class InstallCommandTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('test@phpci.com', $this->admin['mail']);
     }
 
-    public function testAdminNameConfig()
+    public function testAdminUserameConfig()
     {
         $dialog = $this->getDialogHelperMock();
 

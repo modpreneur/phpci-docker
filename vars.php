@@ -16,11 +16,6 @@ if (!defined('PHPCI_BIN_DIR')) {
     define('PHPCI_BIN_DIR', PHPCI_DIR . 'vendor/bin/');
 }
 
-// Define PHPCI_BUILD_ROOT_DIR
-if (!defined('PHPCI_BUILD_ROOT_DIR')) {
-    define('PHPCI_BUILD_ROOT_DIR', PHPCI_DIR . 'PHPCI/build/');
-}
-
 // Should PHPCI run the Shell plugin?
 if (!defined('ENABLE_SHELL_PLUGIN')) {
     define('ENABLE_SHELL_PLUGIN', false);
@@ -33,10 +28,4 @@ if (!defined('PHPCI_IS_CONSOLE')) {
 
 if (!defined('IS_WIN')) {
     define('IS_WIN', ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false));
-}
-
-// If an environment variable is set defining our config location, use that
-// otherwise fall back to PHPCI/config.yml.
-if (!defined('PHPCI_CONFIG_FILE')) {
-    define('PHPCI_CONFIG_FILE', $configFile);
 }

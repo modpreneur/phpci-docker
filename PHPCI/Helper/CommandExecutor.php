@@ -26,13 +26,10 @@ interface CommandExecutor
     /**
      * Find a binary required by a plugin.
      * @param string $binary
-     * @param bool $quiet Returns null instead of throwing an execption.
-     *
+     * @param string $buildPath the current build path
      * @return null|string
-     *
-     * @throws \Exception when no binary has been found and $quiet is false.
      */
-    public function findBinary($binary, $quiet = false);
+    public function findBinary($binary, $buildPath = null);
 
     /**
      * Set the buildPath property.

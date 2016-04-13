@@ -40,4 +40,3 @@ if (file_exists($configFile)) {
 require_once(dirname(__DIR__) . '/vars.php');
 
 \PHPCI\Helper\Lang::init($config);
-\PHPCI\Helper\Lang::setLanguage("en");

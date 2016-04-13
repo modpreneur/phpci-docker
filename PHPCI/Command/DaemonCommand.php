@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PHPCI - Continuous Integration for PHP
  *
@@ -11,48 +10,28 @@
 namespace PHPCI\Command;
 
 use Monolog\Logger;
-use PHPCI\ProcessControl\Factory;
-use PHPCI\ProcessControl\ProcessControlInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Daemon that loops and call the run-command.
- * @author       Gabriel Baker <gabriel.baker@autonomicpilot.co.uk>
- * @package      PHPCI
- * @subpackage   Console
- */
+* Daemon that loops and call the run-command.
+* @author       Gabriel Baker <gabriel.baker@autonomicpilot.co.uk>
+* @package      PHPCI
+* @subpackage   Console
+*/
 class DaemonCommand extends Command
 {
-
     /**
-     * @var Logger
+     * @var \Monolog\Logger
      */
     protected $logger;
 
-    /**
-     * @var string
-     */
-    protected $pidFilePath;
-
-    /**
-     * @var string
-     */
-    protected $logFilePath;
-
-    /**
-     * @var ProcessControlInterface
-     */
-    protected $processControl;
-
-    public function __construct(Logger $logger, ProcessControlInterface $processControl = null, $name = null)
+    public function __construct(Logger $logger, $name = null)
     {
         parent::__construct($name);
         $this->logger = $logger;
-        $this->processControl = $processControl ?: Factory::getInstance();
     }
 
     protected function configure()
@@ -61,30 +40,17 @@ class DaemonCommand extends Command
             ->setName('phpci:daemon')
             ->setDescription('Initiates the daemon to run commands.')
             ->addArgument(
-                'state', InputArgument::REQUIRED, 'start|stop|status'
-            )
-            ->addOption(
-                'pid-file', 'p', InputOption::VALUE_REQUIRED,
-                'Path of the PID file',
-                implode(DIRECTORY_SEPARATOR,
-                    array(PHPCI_DIR, 'daemon', 'daemon.pid'))
-            )
-            ->addOption(
-                'log-file', 'l', InputOption::VALUE_REQUIRED,
-                'Path of the log file',
-                implode(DIRECTORY_SEPARATOR,
-                    array(PHPCI_DIR, 'daemon', 'daemon.log'))
-        );
+                'state',
+                InputArgument::REQUIRED,
+                'start|stop|status'
+            );
     }
 
     /**
-     * Loops through running.
-     */
+    * Loops through running.
+    */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->pidFilePath = $input->getOption('pid-file');
-        $this->logFilePath = $input->getOption('log-file');
-
         $state = $input->getArgument('state');
 
         switch ($state) {
@@ -95,108 +61,64 @@ class DaemonCommand extends Command
                 $this->stopDaemon();
                 break;
             case 'status':
-                $this->statusDaemon($output);
+                $this->statusDaemon();
                 break;
             default:
-                $this->output->writeln("<error>Not a valid choice, please use start, stop or status</error>");
+                echo "Not a valid choice, please use start stop or status";
                 break;
         }
+
     }
 
     protected function startDaemon()
     {
-        $pid = $this->getRunningPid();
-        if ($pid) {
-            $this->logger->notice("Daemon already started", array('pid' => $pid));
+
+        if (file_exists(PHPCI_DIR.'/daemon/daemon.pid')) {
+            echo "Already started\n";
+            $this->logger->warning("Daemon already started");
             return "alreadystarted";
         }
 
-        $this->logger->info("Trying to start the daemon");
-
+        $logfile = PHPCI_DIR."/daemon/daemon.log";
         $cmd = "nohup %s/daemonise phpci:daemonise > %s 2>&1 &";
-        $command = sprintf($cmd, PHPCI_DIR, $this->logFilePath);
-        $output = $exitCode = null;
-        exec($command, $output, $exitCode);
-
-        if ($exitCode !== 0) {
-            $this->logger->error(sprintf("daemonise exited with status %d", $exitCode));
-            return "notstarted";
-        }
-
-        for ($i = 0; !($pid = $this->getRunningPid()) && $i < 5; $i++) {
-            sleep(1);
-        }
-
-        if (!$pid) {
-            $this->logger->error("Could not start the daemon");
-            return "notstarted";
-        }
-
-        $this->logger->notice("Daemon started", array('pid' => $pid));
-        return "started";
+        $command = sprintf($cmd, PHPCI_DIR, $logfile);
+        $this->logger->info("Daemon started");
+        exec($command);
     }
 
     protected function stopDaemon()
     {
-        $pid = $this->getRunningPid();
-        if (!$pid) {
-            $this->logger->notice("Cannot stop the daemon as it is not started");
+
+        if (!file_exists(PHPCI_DIR.'/daemon/daemon.pid')) {
+            echo "Not started\n";
+            $this->logger->warning("Can't stop daemon as not started");
             return "notstarted";
         }
 
-        $this->logger->info("Trying to terminate the daemon", array('pid' => $pid));
-        $this->processControl->kill($pid);
-
-        for ($i = 0; ($pid = $this->getRunningPid()) && $i < 5; $i++) {
-            sleep(1);
-        }
-
-        if ($pid) {
-            $this->logger->warning("The daemon is resiting, trying to kill it", array('pid' => $pid));
-            $this->processControl->kill($pid, true);
-
-            for ($i = 0; ($pid = $this->getRunningPid()) && $i < 5; $i++) {
-                sleep(1);
-            }
-        }
-
-        if (!$pid) {
-            $this->logger->notice("Daemon stopped");
-            return "stopped";
-        }
-
-        $this->logger->error("Could not stop the daemon");
+        $cmd = "kill $(cat %s/daemon/daemon.pid)";
+        $command = sprintf($cmd, PHPCI_DIR);
+        exec($command);
+        $this->logger->info("Daemon stopped");
+        unlink(PHPCI_DIR.'/daemon/daemon.pid');
     }
 
-    protected function statusDaemon(OutputInterface $output)
+    protected function statusDaemon()
     {
-        $pid = $this->getRunningPid();
-        if ($pid) {
-            $output->writeln(sprintf('The daemon is running, PID: %d', $pid));
+
+        if (!file_exists(PHPCI_DIR.'/daemon/daemon.pid')) {
+            echo "Not running\n";
+            return "notrunning";
+        }
+
+        $pid = trim(file_get_contents(PHPCI_DIR.'/daemon/daemon.pid'));
+        $pidcheck = sprintf("/proc/%s", $pid);
+        if (is_dir($pidcheck)) {
+            echo "Running\n";
             return "running";
         }
 
-        $output->writeln('The daemon is not running');
+        unlink(PHPCI_DIR.'/daemon/daemon.pid');
+        echo "Not running\n";
         return "notrunning";
-    }
-
-    /** Check if there is a running daemon
-     *
-     * @return int|null
-     */
-    protected function getRunningPid()
-    {
-        if (!file_exists($this->pidFilePath)) {
-            return;
-        }
-
-        $pid = intval(trim(file_get_contents($this->pidFilePath)));
-
-        if($this->processControl->isRunning($pid, true)) {
-            return $pid;
-        }
-
-        // Not found, remove the stale PID file
-        unlink($this->pidFilePath);
     }
 }

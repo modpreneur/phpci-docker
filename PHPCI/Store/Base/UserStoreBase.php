@@ -21,7 +21,10 @@ class UserStoreBase extends Store
     protected $primaryKey  = 'id';
 
     /**
-     * Get a User by primary key (Id)
+     * Returns a User model by primary key.
+     * @param mixed $value
+     * @param string $useConnection
+     * @return \@appNamespace\Model\User|null
      */
     public function getByPrimaryKey($value, $useConnection = 'read')
     {
@@ -29,8 +32,11 @@ class UserStoreBase extends Store
     }
 
     /**
-     * Get a single User by Id.
-     * @return null|User
+     * Returns a User model by Id.
+     * @param mixed $value
+     * @param string $useConnection
+     * @throws HttpException
+     * @return \@appNamespace\Model\User|null
      */
     public function getById($value, $useConnection = 'read')
     {
@@ -52,8 +58,11 @@ class UserStoreBase extends Store
     }
 
     /**
-     * Get a single User by Email.
-     * @return null|User
+     * Returns a User model by Email.
+     * @param mixed $value
+     * @param string $useConnection
+     * @throws HttpException
+     * @return \@appNamespace\Model\User|null
      */
     public function getByEmail($value, $useConnection = 'read')
     {
@@ -72,37 +81,5 @@ class UserStoreBase extends Store
         }
 
         return null;
-    }
-
-    /**
-     * Get multiple User by Name.
-     * @return array
-     */
-    public function getByName($value, $limit = 1000, $useConnection = 'read')
-    {
-        if (is_null($value)) {
-            throw new HttpException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
-        }
-
-
-        $query = 'SELECT * FROM `user` WHERE `name` = :name LIMIT :limit';
-        $stmt = Database::getConnection($useConnection)->prepare($query);
-        $stmt->bindValue(':name', $value);
-        $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);
-
-        if ($stmt->execute()) {
-            $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            $map = function ($item) {
-                return new User($item);
-            };
-            $rtn = array_map($map, $res);
-
-            $count = count($rtn);
-
-            return array('items' => $rtn, 'count' => $count);
-        } else {
-            return array('items' => array(), 'count' => 0);
-        }
     }
 }

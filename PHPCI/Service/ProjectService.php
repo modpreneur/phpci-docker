@@ -81,16 +81,8 @@ class ProjectService
             $project->setAllowPublicStatus((int)$options['allow_public_status']);
         }
 
-        if (array_key_exists('archived', $options)) {
-            $project->setArchived((bool)$options['archived']);
-        }
-
         if (array_key_exists('branch', $options)) {
             $project->setBranch($options['branch']);
-        }
-
-        if (array_key_exists('group', $options)) {
-            $project->setGroup($options['group']);
         }
 
         // Allow certain project types to set access information:

@@ -1,4 +1,4 @@
-.phpci .main-header .logo, .phpci .main-header .logo:hover  {
+.skin-blue .logo, .skin-blue .logo:hover  {
     background-image: url('/assets/img/logo-large.png');
     background-repeat: no-repeat;
     background-size: 40%;
@@ -75,10 +75,3 @@
     margin-top: 19px;
     font-size: 11px;
 }
-
-#phpunit-data th div { margin: 0 0.5em; }
-#phpunit-data .success td { background: none; color: #00a65a; }
-#phpunit-data .fail td { background: none; color: #f56954; }
-#phpunit-data .error td { background: none; color: #f56954; }
-#phpunit-data .skipped td { background: none; color: #e08e0b; }
-#phpunit-data .todo td { background: none; color: #00c0ef; }

@@ -1,14 +1,13 @@
 <?php
-
 /**
  * PHPCI - Continuous Integration for PHP
  *
  * @copyright    Copyright 2013, Block 8 Limited.
- * @license      https://github.com/Block8/PHPCI/blob/master/LICENSE.md
- * @link         https://www.phptesting.org/
+ * @license        https://github.com/Block8/PHPCI/blob/master/LICENSE.md
+ * @link            http://www.phptesting.org/
  */
 
-namespace Tests\PHPCI\Plugin;
+namespace PHPCI\Plugin\Tests;
 
 use PHPCI\Plugin\Email as EmailPlugin;
 use PHPCI\Model\Build;
@@ -43,23 +42,22 @@ class EmailTest extends \PHPUnit_Framework_TestCase
     /**
      * @var int buildStatus
      */
-    public $buildStatus;
+    protected $buildStatus;
 
     /**
      * @var array $message;
      */
-    public $message;
+    protected $message;
 
     /**
      * @var bool $mailDelivered
      */
-    public $mailDelivered;
+    protected $mailDelivered;
 
     public function setUp()
     {
         $this->message = array();
         $this->mailDelivered = true;
-        $self = $this;
 
         $this->mockProject = $this->getMock(
             '\PHPCI\Model\Project',
@@ -87,8 +85,8 @@ class EmailTest extends \PHPUnit_Framework_TestCase
 
         $this->mockBuild->expects($this->any())
             ->method('getStatus')
-            ->will($this->returnCallback(function () use ($self) {
-                return $self->buildStatus;
+            ->will($this->returnCallback(function () {
+                return $this->buildStatus;
             }));
 
         $this->mockBuild->expects($this->any())
@@ -140,8 +138,6 @@ class EmailTest extends \PHPUnit_Framework_TestCase
         // Reset current message.
         $this->message = array();
 
-        $self = $this;
-
         $this->testedEmailPlugin = $this->getMock(
             '\PHPCI\Plugin\Email',
             array('sendEmail'),
@@ -154,13 +150,13 @@ class EmailTest extends \PHPUnit_Framework_TestCase
 
         $this->testedEmailPlugin->expects($this->any())
             ->method('sendEmail')
-            ->will($this->returnCallback(function ($to, $cc, $subject, $body) use ($self) {
-                $self->message['to'][] = $to;
-                $self->message['cc'] = $cc;
-                $self->message['subject'] = $subject;
-                $self->message['body'] = $body;
+            ->will($this->returnCallback(function ($to, $cc, $subject, $body) {
+                $this->message['to'][] = $to;
+                $this->message['cc'] = $cc;
+                $this->message['subject'] = $subject;
+                $this->message['body'] = $body;
 
-                return $self->mailDelivered;
+                return $this->mailDelivered;
             }));
     }
 
@@ -236,11 +232,11 @@ class EmailTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers PHPUnit::execute
      */
-    public function testExecute_UniqueRecipientsWithCommitter()
+    public function testExecute_UniqueRecipientsWithCommiter()
     {
         $this->loadEmailPluginWithOptions(
             array(
-                'committer'  => true,
+                'commiter'  => true,
                 'addresses' => array('test-receiver@example.com', 'committer@test.com')
             )
         );
@@ -349,7 +345,7 @@ class EmailTest extends \PHPUnit_Framework_TestCase
         $this->testedEmailPlugin->execute();
 
         $this->assertContains('Passing', $this->message['subject']);
-        $this->assertContains('successful', $this->message['body']);
+        $this->assertContains('successfull', $this->message['body']);
     }
 
     /**

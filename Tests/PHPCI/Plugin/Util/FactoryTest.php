@@ -1,14 +1,8 @@
 <?php
 
-/**
- * PHPCI - Continuous Integration for PHP
- *
- * @copyright    Copyright 2015, Block 8 Limited.
- * @license      https://github.com/Block8/PHPCI/blob/master/LICENSE.md
- * @link         https://www.phptesting.org/
- */
+namespace PHPCI\Plugin\Tests\Util;
 
-namespace Tests\PHPCI\Plugin\Util;
+require_once __DIR__ . "/ExamplePlugins.php";
 
 use PHPCI\Plugin\Util\Factory;
 
@@ -55,9 +49,10 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
 
     public function testBuildPluginWorksWithConstructorlessPlugins()
     {
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginWithNoConstructorArgs');
-        $plugin = $this->testedFactory->buildPlugin($pluginClass);
-        $this->assertInstanceOf($pluginClass, $plugin);
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $expectedPluginClass = $namespace  .'ExamplePluginWithNoConstructorArgs';
+        $plugin = $this->testedFactory->buildPlugin($expectedPluginClass);
+        $this->assertInstanceOf($expectedPluginClass, $plugin);
     }
 
     public function testBuildPluginFailsForNonPluginClasses()
@@ -68,9 +63,10 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
 
     public function testBuildPluginWorksWithSingleOptionalArgConstructor()
     {
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginWithSingleOptionalArg');
-        $plugin = $this->testedFactory->buildPlugin($pluginClass);
-        $this->assertInstanceOf($pluginClass, $plugin);
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $expectedPluginClass = $namespace  . 'ExamplePluginWithSingleOptionalArg';
+        $plugin = $this->testedFactory->buildPlugin($expectedPluginClass);
+        $this->assertInstanceOf($expectedPluginClass, $plugin);
     }
 
     public function testBuildPluginThrowsExceptionIfMissingResourcesForRequiredArg()
@@ -80,13 +76,15 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
             'Unsatisfied dependency: requiredArgument'
         );
 
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginWithSingleRequiredArg');
-        $plugin = $this->testedFactory->buildPlugin($pluginClass);
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $expectedPluginClass = $namespace  . 'ExamplePluginWithSingleRequiredArg';
+        $plugin = $this->testedFactory->buildPlugin($expectedPluginClass);
     }
 
     public function testBuildPluginLoadsArgumentsBasedOnName()
     {
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginWithSingleRequiredArg');
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $expectedPluginClass = $namespace  . 'ExamplePluginWithSingleRequiredArg';
 
         $this->testedFactory->registerResource(
             $this->resourceLoader,
@@ -94,14 +92,15 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         );
 
         /** @var ExamplePluginWithSingleRequiredArg $plugin */
-        $plugin = $this->testedFactory->buildPlugin($pluginClass);
+        $plugin = $this->testedFactory->buildPlugin($expectedPluginClass);
 
         $this->assertEquals($this->expectedResource, $plugin->RequiredArgument);
     }
 
     public function testBuildPluginLoadsArgumentsBasedOnType()
     {
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginWithSingleTypedRequiredArg');
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $expectedPluginClass = $namespace  . 'ExamplePluginWithSingleTypedRequiredArg';
 
         $this->testedFactory->registerResource(
             $this->resourceLoader,
@@ -110,26 +109,28 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         );
 
         /** @var ExamplePluginWithSingleTypedRequiredArg $plugin */
-        $plugin = $this->testedFactory->buildPlugin($pluginClass);
+        $plugin = $this->testedFactory->buildPlugin($expectedPluginClass);
 
         $this->assertEquals($this->expectedResource, $plugin->RequiredArgument);
     }
 
     public function testBuildPluginLoadsFullExample()
     {
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginFull');
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $expectedPluginClass = $namespace  . 'ExamplePluginFull';
 
         $this->registerBuildAndBuilder();
 
         /** @var ExamplePluginFull $plugin */
-        $plugin = $this->testedFactory->buildPlugin($pluginClass);
+        $plugin = $this->testedFactory->buildPlugin($expectedPluginClass);
 
-        $this->assertInstanceOf($pluginClass, $plugin);
+        $this->assertInstanceOf($expectedPluginClass, $plugin);
     }
 
     public function testBuildPluginLoadsFullExampleWithOptions()
     {
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginFull');
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $expectedPluginClass = $namespace  . 'ExamplePluginFull';
 
         $expectedArgs = array(
             'thing' => "stuff"
@@ -139,7 +140,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
 
         /** @var ExamplePluginFull $plugin */
         $plugin = $this->testedFactory->buildPlugin(
-            $pluginClass,
+            $expectedPluginClass,
             $expectedArgs
         );
 
@@ -162,8 +163,10 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
             realpath(__DIR__ . "/ExamplePluginConfig.php")
         );
 
-        $pluginClass = $this->getFakePluginClassName('ExamplePluginWithSingleRequiredArg');
-        $plugin = $this->testedFactory->buildPlugin($pluginClass);
+        $namespace = '\\PHPCI\\Plugin\\Tests\\Util\\';
+        $pluginName = $namespace  . 'ExamplePluginWithSingleRequiredArg';
+
+        $plugin = $this->testedFactory->buildPlugin($pluginName);
 
         // The Example config file defines an array as the resource.
         $this->assertEquals(
@@ -178,11 +181,9 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
      */
     private function registerBuildAndBuilder()
     {
-        $self = $this;
-
         $this->testedFactory->registerResource(
-            function () use ($self) {
-                return $self->getMock(
+            function () {
+                return $this->getMock(
                     'PHPCI\Builder',
                     array(),
                     array(),
@@ -195,8 +196,8 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         );
 
         $this->testedFactory->registerResource(
-            function () use ($self) {
-                return $self->getMock(
+            function () {
+                return $this->getMock(
                     'PHPCI\Model\Build',
                     array(),
                     array(),
@@ -205,15 +206,8 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
                 );
             },
             null,
-            'PHPCI\\Model\\Build'
+            'PHPCI\\Model\Build'
         );
     }
-
-    protected function getFakePluginClassName($pluginName)
-    {
-        $pluginNamespace = '\\Tests\\PHPCI\\Plugin\\Util\\Fake\\';
-
-        return $pluginNamespace . $pluginName;
-    }
 }
-
+ 

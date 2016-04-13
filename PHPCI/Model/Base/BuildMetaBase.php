@@ -99,7 +99,7 @@ class BuildMetaBase extends Model
             'default' => null,
         ),
         'meta_value' => array(
-            'type' => 'mediumtext',
+            'type' => 'text',
             'default' => null,
         ),
     );
