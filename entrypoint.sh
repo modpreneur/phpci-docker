@@ -7,4 +7,4 @@ composer update
 
 exec apache2-foreground
 
-./daemonise phpci:daemonise
+#./daemonise phpci:daemonise
