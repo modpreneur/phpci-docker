@@ -1,0 +1,10 @@
+b8:
+    database:
+        servers:
+            read: database
+            write: database
+        name: phpci
+        username: phpci
+        password: phpci
+phpci:
+    url: 'http://88.146.49.119:8090'
