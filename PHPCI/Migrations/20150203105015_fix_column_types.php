@@ -14,7 +14,7 @@ class FixColumnTypes extends AbstractMigration
         $build = $this->table('build');
         $build->changeColumn('log', 'text', array(
             'null' => true,
-            'default' => '',
+            'default' => 1,
             'limit' => MysqlAdapter::TEXT_MEDIUM,
         ));
 
