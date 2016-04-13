@@ -16,7 +16,7 @@ RUN apt-get update && apt-get -y install \
     libmcrypt-dev \
     nano \
 
-    && docker-php-ext-install curl json mbstring opcache zip mcrypt \
+    && docker-php-ext-install curl json mbstring opcache zip mcrypt pdo_mysql \
     && curl -sS https://getcomposer.org/installer | php \
     && cp composer.phar /usr/bin/composer \
     && composer global require hirak/prestissimo \
