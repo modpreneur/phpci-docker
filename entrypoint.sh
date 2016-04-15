@@ -12,6 +12,10 @@ service postfix start
 
 chmod +x /var/app/docker/supervisor-manager.sh
 
+chmod +x ./console
+
+./console phpci:update
+
 nohup php ./daemonise phpci:daemonise >/dev/null 2>&1  &
 
 exec apache2-foreground
