@@ -6,7 +6,6 @@ config.php
 .settings/
 .project
 .buildpath
-.htaccess
 PHPCI/config.yml
 cache
 /loggerconfig.php
