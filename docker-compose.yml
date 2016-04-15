@@ -56,9 +56,9 @@ postgres:
 pdfgen:
   image: nousefreak/pdfgen
   ports:
-    - 7421:80
+    - 7420:80
   expose:
-    - 7421
+    - 7420
 
 rabbitMQ:
   image: rabbitmq:3-management
