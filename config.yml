@@ -6,5 +6,6 @@ b8:
         name: phpci
         username: phpci
         password: phpci
+        port: 3307
 phpci:
     url: 'http://88.146.49.119:8090'
