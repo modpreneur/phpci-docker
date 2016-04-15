@@ -2,10 +2,19 @@ phpci:
     build: .
     ports:
       - "8090:80"
+      - "9002:9002"
     expose:
       - "8090"
+      - "9002"
+
     links:
         - mysql:database
+        - postgres:database
+        - redis:redis
+        - pdfgen:pdfgen
+        - rabbitMQ:rabbitMQ
+        - mysql:mysql
+        - elasticsearch:elasticsearch
     volumes:
         - .:/var/app
 
@@ -20,3 +29,41 @@ mysql:
         - MYSQL_PASSWORD=phpci
 
 
+elasticsearch:
+  image: elasticsearch:latest
+#  build: ./docker/elasticSearch
+  ports:
+    - 9300:9300
+    - 9200:9200
+
+redis:
+  build: ./docker/redis/
+  ports:
+    - 6379:6379
+  volumes:
+    - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+  restart: always
+
+postgres:
+  image: postgres:9.4
+  ports:
+    - 5432:5432
+  environment:
+    - POSTGRES_USER=user
+    - POSTGRES_PASSWORD=pass
+    - DEBUG=false
+
+pdfgen:
+  image: nousefreak/pdfgen
+  ports:
+    - 7420:80
+  expose:
+    - 7420
+
+rabbitMQ:
+  image: rabbitmq:3-management
+  ports:
+    - "5672:5672"
+    - "15672:15672"
+  volumes:
+    - /opt/Data/Rabbitmq:/var/lib/rabbitmq
