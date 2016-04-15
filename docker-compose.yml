@@ -2,10 +2,10 @@ phpci:
     build: .
     ports:
       - "8090:80"
-      - "9002:9002"
+      - "9001:9001"
     expose:
       - "8090"
-      - "9002"
+      - "9001"
 
     links:
         - mysql:database
