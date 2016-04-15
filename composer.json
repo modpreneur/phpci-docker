@@ -51,11 +51,9 @@
         "block8\/php-docblock-checker": "1.0.3",
         "phpmd\/phpmd": "2.4.2",
         "sebastian\/phpcpd": "2.0.2",
-        "squizlabs\/php_codesniffer": "3.0.x-dev",
         "phpspec\/phpspec": "2.5.x-dev",
         "hipchat\/hipchat-php": "dev-master",
         "fabpot\/php-cs-fixer": "v1.9.3",
-        "phploc\/phploc": "3.0.0",
         "behat\/behat": "v3.1.0"
     },
     "require-dev": {
