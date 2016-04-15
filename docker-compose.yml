@@ -63,7 +63,7 @@ pdfgen:
 rabbitMQ:
   image: rabbitmq:3-management
   ports:
-    - "5672:5672"
+    - "5673:5672"
     - "15673:15672"
   volumes:
     - /opt/Data/Rabbitmq:/var/lib/rabbitmq
