@@ -1,8 +1,8 @@
 b8:
     database:
         servers:
-            read: database
-            write: database
+            read: mysql
+            write: mysql
         name: phpci
         username: phpci
         password: phpci
