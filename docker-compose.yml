@@ -8,7 +8,6 @@ phpci:
       - "9001"
 
     links:
-        - mysql:database
         - postgres:database
         - redis:redis
         - pdfgen:pdfgen
