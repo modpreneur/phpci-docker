@@ -1,0 +1,11 @@
+phpci:
+  extends:
+    service: phpci
+  tty: true
+  environment:
+    - DEBUG=true
+    - VIRTUAL_HOST=phpci.docker
+  privileged: true
+  hostname: phpci.docker
+  domainname: phpci.docker
+  privileged: true

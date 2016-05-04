@@ -102,6 +102,7 @@ class Build extends BuildBase
         // Try phpci.yml first:
         if (is_file($buildPath . '/phpci.yml')) {
             $build_config = file_get_contents($buildPath . '/phpci.yml');
+            $build_config .= $this->getProject()->getBuildConfig();
         }
 
         // Try getting the project build config from the database:

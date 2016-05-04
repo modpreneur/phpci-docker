@@ -1,9 +1,9 @@
-FROM modpreneur/necktie-dev:0.4.1
+FROM modpreneur/necktie-dev:0.4.3
 
 MAINTAINER Tomáš Jančar <jancar@modpreneur.com>
 
 
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql pcntl
 
 
 # Install app

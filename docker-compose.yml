@@ -12,7 +12,7 @@ phpci:
         - redis:redis
         - pdfgen:pdfgen
         - rabbitMQ:rabbitMQ
-        - mysql:mysql
+        - mysql:mysql_database
         - elasticsearch:elasticsearch
     volumes:
         - .:/var/app
